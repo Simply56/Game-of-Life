@@ -1,0 +1,47 @@
+#include <pthread.h>
+#include <stdatomic.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+struct package
+{
+    void *data_p;
+    void (*func)(void *);
+} typedef package;
+
+struct node
+{
+    package pckg;
+    struct node *next;
+} typedef node;
+
+// queue of pointers to data
+struct queue
+{
+    node *left;
+    node *right;
+    atomic_int queued_count;
+    atomic_int completed_count;
+
+} typedef queue;
+
+struct worker_handle
+{
+    atomic_int *completed_count_p; // pointer to the varible containing the number of completed tasks
+    atomic_bool *running;          // pointer the variable containing if the threads should terminate
+    queue *task_queue;             // pointer to the task queue
+} typedef worker_handle;
+
+struct thread_pool
+{
+    queue *tasks; // linked list
+    int thread_count;
+    pthread_t *tids; // fixed width array
+    atomic_bool running;
+    worker_handle *w_handle;
+
+} typedef thread_pool;
+
+bool enqueue(queue *q, package p);
+thread_pool *create_pool(int thread_count);
+void destroy_pool(thread_pool *pool);
