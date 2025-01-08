@@ -7,10 +7,10 @@
 
 /* game of life hashmap using a singly linked list as buckets */
 
-#define EMPTY 0
-#define BLUE 1
-#define ORANGE 2
-#define DEAD 3
+#define EMPTY ((uint8_t) 0)
+#define BLUE ((uint8_t) 1)
+#define ORANGE ((uint8_t) 2)
+#define DEAD ((uint8_t) 3)
 
 struct cell
 {
@@ -35,7 +35,7 @@ struct cellNode
 
 struct lifeHashMap
 {
-    cellNode **slots; // array of pointers
+    cellNode **buckets; // array of pointers
     uint16_t size;
     pthread_mutex_t *locks; // fixed width array
 } typedef lifeHashMap;

@@ -14,13 +14,14 @@ void *worker_start(void *handle)
 
     while (*(h->running)) {
         input = dequeue(h->task_queue);
-        if ((input.data_p == NULL)) {
+        if (input.data_p == NULL) {
             sched_yield();
             continue;
         }
         input.func(input.data_p);
         (*(h->completed_count_p))++;
     }
+    return handle;
 }
 
 void queue_init(queue *q)

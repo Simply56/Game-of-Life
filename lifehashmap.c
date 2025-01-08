@@ -14,17 +14,17 @@ uint16_t hash(uint16_t x, uint16_t y, uint16_t modulo)
 
 lifeHashMap *innit(uint16_t size, int width, int height)
 {
-    cellNode **slots = NULL;
+    cellNode **buckets = NULL;
     lifeHashMap *map = NULL;
     pthread_mutex_t *locks = NULL;
     map = calloc(1, sizeof(lifeHashMap));
-    slots = calloc(size, sizeof(cellNode *));
+    buckets = calloc(size, sizeof(cellNode *));
     locks = calloc(size, sizeof(pthread_mutex_t));
-    if (!map || !slots || !locks) {
+    if (!map || !buckets || !locks) {
         goto err;
     }
     map->size = size;
-    map->slots = slots;
+    map->buckets = buckets;
     map->locks = locks;
 
     // crete mutexes
@@ -41,7 +41,7 @@ lifeHashMap *innit(uint16_t size, int width, int height)
     return map;
 
 err:
-    free(slots);
+    free(buckets);
     free(map);
     free(locks);
     return NULL;
@@ -51,7 +51,7 @@ err:
 cell *__lifemap_get(lifeHashMap *map, uint16_t x, uint16_t y)
 {
     uint16_t key = hash(x, y, map->size);
-    cellNode *curr = map->slots[key];
+    cellNode *curr = map->buckets[key];
     while (curr) {
         if (curr->c.x == x && curr->c.y == y) {
             return &curr->c;
@@ -75,7 +75,7 @@ bool lifemap_del(lifeHashMap *map, cell c)
     // print_cell(c);
 
     uint16_t key = hash(c.x, c.y, map->size);
-    cellNode *curr = map->slots[key];
+    cellNode *curr = map->buckets[key];
     if (curr == NULL) {
         return false;
     }
@@ -83,7 +83,7 @@ bool lifemap_del(lifeHashMap *map, cell c)
     // remove head
     if (curr->c.x == c.x && curr->c.y == c.y) {
         cellNode *tmp = curr;
-        map->slots[key] = curr->next;
+        map->buckets[key] = curr->next;
         free(tmp);
         return true;
     }
@@ -112,14 +112,14 @@ bool __lifemap_set(lifeHashMap *map, cell c)
         return true;
     }
     uint16_t key = hash(c.x, c.y, map->size);
-    cellNode *curr = map->slots[key];
+    cellNode *curr = map->buckets[key];
     if (curr == NULL) {
         cellNode *new_node = calloc(1, sizeof(cellNode));
         if (new_node == NULL)
             return false;
 
         new_node->c = c;
-        map->slots[key] = new_node;
+        map->buckets[key] = new_node;
         return true;
     }
 
@@ -157,15 +157,15 @@ void lifemap_free(lifeHashMap *map)
     free(map->locks);
 
     for (uint16_t i = 0; i < map->size; i++) {
-        cellNode *curr = map->slots[i];
+        cellNode *curr = map->buckets[i];
         while (curr) {
             cellNode *tmp = curr;
             curr = curr->next;
             free(tmp);
         }
-        map->slots[i] = NULL;
+        map->buckets[i] = NULL;
     }
-    free(map->slots);
+    free(map->buckets);
     free(map);
 }
 
@@ -200,7 +200,7 @@ void print_map(lifeHashMap *map)
 {
     puts("--------------------");
     for (uint16_t i = 0; i < map->size; i++) {
-        cellNode *curr = map->slots[i];
+        cellNode *curr = map->buckets[i];
         printf("[%d]: ", i);
         pthread_mutex_lock(&(map->locks[i]));
         while (curr) {
