@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <pthread.h>
 #include <stdatomic.h>
 #include <stdbool.h>
@@ -37,7 +39,7 @@ struct lifeHashMap
 {
     cellNode **buckets; // array of pointers
     uint16_t size;
-    pthread_mutex_t *locks; // fixed width array
+    pthread_rwlock_t *locks; // fixed width array
 } typedef lifeHashMap;
 
 void print_cell(cell c);

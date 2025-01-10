@@ -52,7 +52,7 @@ thread_pool *create_pool(int thread_count)
 
     queue_init(pool->tasks);
 
-    worker_handle *h = calloc(1, sizeof(worker_handle)); // TODO handlde error
+    worker_handle *h = calloc(1, sizeof(worker_handle));
     if (!h) {
         goto err;
     }

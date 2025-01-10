@@ -16,20 +16,20 @@ lifeHashMap *innit(uint16_t size, int width, int height)
 {
     cellNode **buckets = NULL;
     lifeHashMap *map = NULL;
-    pthread_mutex_t *locks = NULL;
+    pthread_rwlock_t *rw_locks = NULL;
     map = calloc(1, sizeof(lifeHashMap));
     buckets = calloc(size, sizeof(cellNode *));
-    locks = calloc(size, sizeof(pthread_mutex_t));
-    if (!map || !buckets || !locks) {
+    rw_locks = calloc(size, sizeof(pthread_rwlock_t));
+    if (!map || !buckets || !rw_locks) {
         goto err;
     }
     map->size = size;
     map->buckets = buckets;
-    map->locks = locks;
+    map->locks = rw_locks;
 
     // crete mutexes
     for (uint16_t i = 0; i < size; i++) {
-        pthread_mutex_init(&(map->locks[i]), NULL);
+        pthread_rwlock_init(&(map->locks[i]), NULL);
     }
 
     for (uint16_t y = 0; y < height; y++) {
@@ -43,7 +43,7 @@ lifeHashMap *innit(uint16_t size, int width, int height)
 err:
     free(buckets);
     free(map);
-    free(locks);
+    free(rw_locks);
     return NULL;
 }
 
@@ -63,9 +63,9 @@ cell *__lifemap_get(lifeHashMap *map, uint16_t x, uint16_t y)
 cell *lifemap_get(lifeHashMap *map, uint16_t x, uint16_t y)
 {
     uint16_t key = hash(x, y, map->size);
-    pthread_mutex_lock(&(map->locks[key]));
+    pthread_rwlock_rdlock(&(map->locks[key]));
     cell *result = __lifemap_get(map, x, y);
-    pthread_mutex_unlock(&(map->locks[key]));
+    pthread_rwlock_unlock(&(map->locks[key]));
     return result;
 }
 
@@ -143,16 +143,16 @@ bool __lifemap_set(lifeHashMap *map, cell c)
 bool lifemap_set(lifeHashMap *map, cell c)
 {
     uint16_t key = hash(c.x, c.y, map->size);
-    pthread_mutex_lock(&(map->locks[key]));
+    pthread_rwlock_wrlock(&(map->locks[key]));
     bool result = __lifemap_set(map, c);
-    pthread_mutex_unlock(&(map->locks[key]));
+    pthread_rwlock_unlock(&(map->locks[key]));
     return result;
 }
 
 void lifemap_free(lifeHashMap *map)
 {
     for (uint16_t i = 0; i < map->size; i++) {
-        pthread_mutex_destroy(&(map->locks[i]));
+        pthread_rwlock_destroy(&(map->locks[i]));
     }
     free(map->locks);
 
@@ -202,14 +202,14 @@ void print_map(lifeHashMap *map)
     for (uint16_t i = 0; i < map->size; i++) {
         cellNode *curr = map->buckets[i];
         printf("[%d]: ", i);
-        pthread_mutex_lock(&(map->locks[i]));
+        pthread_rwlock_rdlock(&(map->locks[i]));
         while (curr) {
             print_cell(curr->c);
             printf(", ");
             curr = curr->next;
         }
         puts("");
-        pthread_mutex_unlock(&(map->locks[i]));
+        pthread_rwlock_unlock(&(map->locks[i]));
     }
     puts("--------------------");
 }

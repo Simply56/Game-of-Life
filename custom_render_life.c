@@ -13,10 +13,10 @@
 
 #define GRID_W 200 // Grid width
 #define GRID_H 200 // Grid height
-#define CELL_SIZE 3
+#define CELL_SIZE 2
 
 /* 
- * due to the sequencia nature of adding buckets to the qeueue
+ * due to the sequencial nature of adding buckets to the qeueue
  * highest possible number of bucket doesn't achieves the fastest result
  */
 // #define MAP_SIZE UINT16_MAX // max value
@@ -160,6 +160,8 @@ void purify_bucket(void *bucket)
 
 void update_grid()
 {
+    // print_fps(); // Call to calculate and print FPS
+    // return;
     // lifemap_free(new_map);
     // new_map = innit(MAP_SIZE, 0, 0);
 
@@ -178,7 +180,7 @@ void update_grid()
     pool->tasks->completed_count = 0;
     pool->tasks->queued_count = 0;
 
-    // generate new_map
+    // compute new_map
     pool->tasks->queued_count = 0;
     for (uint16_t i = 0; i < map->size; i++) {
         if (map->buckets[i] == NULL) {
@@ -188,8 +190,11 @@ void update_grid()
         enqueue(pool->tasks, (package){ .data_p = map->buckets[i], .func = update_bucket });
         pool->tasks->queued_count++;
     }
+    print_fps(); // Call to calculate and print FPS
 
     while (pool->tasks->completed_count != pool->tasks->queued_count) {
+        // puts("waiting for pool");
+        sched_yield();
         continue;
     }
     pool->tasks->completed_count = 0;
@@ -203,7 +208,6 @@ void update_grid()
     void *tmp = map;
     map = new_map;
     new_map = tmp;
-    print_fps(); // Call to calculate and print FPS
 }
 
 // Function to draw the grid using OpenGL
@@ -278,8 +282,8 @@ void timer_callback(int _)
 }
 void idle_callback()
 {
-    update_grid();       // Update the grid
-    glutPostRedisplay(); // Request the screen to be redrawn
+    update_grid();
+    glutPostRedisplay();
 }
 
 void cleanup()
