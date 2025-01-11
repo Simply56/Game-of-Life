@@ -18,7 +18,7 @@ struct cell
 {
     uint16_t x;
     uint16_t y;
-    int_fast8_t state;
+    uint8_t state;
 } typedef cell;
 
 /* CONVERSION TO BINARY TREE FROM LINKED LIST
@@ -29,6 +29,7 @@ struct cell
  * It also won't work for non-unique sequences.
  * my note: static variables are not thread safe, so use pointers to next instead
  */
+
 struct cellNode
 {
     cell c;

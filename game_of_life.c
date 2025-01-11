@@ -15,15 +15,16 @@
 #define GRID_H 200 // Grid height
 #define CELL_SIZE 2
 
-/* 
- * due to the sequencial nature of adding buckets to the qeueue
- * highest possible number of bucket doesn't achieves the fastest result
- */
-// #define MAP_SIZE UINT16_MAX // max value
-// #define MAP_SIZE 32768
-#define MAP_SIZE 4096
+// #define MAP_SIZE UINT16_MAX // max value (not a power of two)
+#define MAP_SIZE 32768
+// #define MAP_SIZE 4096
+
+// #define MAP_SIZE 2048
 
 #define DELAY 0 // mili
+// MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
+#define BUCKETS_PER_THREAD 1024
+#define THREADS 10
 
 lifeHashMap *map;
 lifeHashMap *new_map;
@@ -126,8 +127,8 @@ void update_bucket(void *bucket)
 
     cellNode *curr = bucket;
     while (curr) {
-        for (int_fast8_t dy = -1; dy <= 1; dy++) {
-            for (int_fast8_t dx = -1; dx <= 1; dx++) {
+        for (int8_t dy = -1; dy <= 1; dy++) {
+            for (int8_t dx = -1; dx <= 1; dx++) {
                 //avoid underflow
                 if ((dy == -1 && curr->c.y == 0) || (dx == -1 && curr->c.x == 0)) {
                     continue;
@@ -138,6 +139,15 @@ void update_bucket(void *bucket)
             }
         }
         curr = curr->next;
+    }
+}
+
+void update_buckets(void *start_bucket)
+{
+    assert(start_bucket != NULL);
+    for (int i = 0; i < BUCKETS_PER_THREAD; i++) {
+        update_bucket(start_bucket);
+        start_bucket += sizeof(cellNode *);
     }
 }
 
@@ -158,50 +168,40 @@ void purify_bucket(void *bucket)
     }
 }
 
-void update_grid()
+void for_buckets(lifeHashMap *life_map, void (*f)(void *))
 {
-    // print_fps(); // Call to calculate and print FPS
-    // return;
-    // lifemap_free(new_map);
-    // new_map = innit(MAP_SIZE, 0, 0);
-
-    // purify new_map
     pool->tasks->queued_count = 0;
-    for (uint16_t i = 0; i < new_map->size; i++) {
-        if (new_map->buckets[i] == NULL) {
-            continue;
-        }
-        enqueue(pool->tasks, (package){ .data_p = new_map->buckets[i], .func = purify_bucket });
+    for (uint16_t i = 0; i < life_map->size; i += BUCKETS_PER_THREAD) {
+        // if (life_map->buckets[i] == NULL) {
+        //     continue;
+        // }
+        enqueue(pool->tasks, (package){ .data_p = life_map->buckets + i, .func = f });
         pool->tasks->queued_count++;
     }
-    while (pool->tasks->completed_count != pool->tasks->queued_count) {
-        continue;
-    }
-    pool->tasks->completed_count = 0;
-    pool->tasks->queued_count = 0;
-
-    // compute new_map
-    pool->tasks->queued_count = 0;
-    for (uint16_t i = 0; i < map->size; i++) {
-        if (map->buckets[i] == NULL) {
-            continue;
-        }
-
-        enqueue(pool->tasks, (package){ .data_p = map->buckets[i], .func = update_bucket });
-        pool->tasks->queued_count++;
-    }
-    print_fps(); // Call to calculate and print FPS
 
     while (pool->tasks->completed_count != pool->tasks->queued_count) {
-        // puts("waiting for pool");
         sched_yield();
         continue;
     }
     pool->tasks->completed_count = 0;
     pool->tasks->queued_count = 0;
+}
 
-    // for (uint16_t i = 0; i < MAP_SIZE; i++) {
-    //     update_bucket(map->buckets[i]);
+void update_grid()
+{
+    print_fps();
+    // return;
+
+    // purify new_map
+    // for_buckets(new_map, purify_bucket);
+    lifemap_free(new_map);
+    new_map = innit(MAP_SIZE, 0, 0);
+    // compute new_map
+    for_buckets(map, update_buckets);
+
+    // single threaded version for comparison
+    // for (uint16_t i = 0; i < MAP_SIZE; i += BUCKETS_PER_THREAD) {
+    //     update_buckets(map->buckets + i);
     // }
 
     // swap
@@ -280,6 +280,7 @@ void timer_callback(int _)
     glutPostRedisplay();
     glutTimerFunc(DELAY, timer_callback, 0); // Schedule next update in DELAYms
 }
+
 void idle_callback()
 {
     update_grid();
@@ -296,12 +297,18 @@ void cleanup()
 // Main function
 int main(int argc, char **argv)
 {
+    assert(MAP_SIZE % BUCKETS_PER_THREAD == 0);
     atexit(cleanup); // Register cleanup function
     double load_factor = ((double) GRID_H * (double) GRID_W) / (double) MAP_SIZE;
     printf("Load factor: %f\n", load_factor);
     initialize_map();
 
-    pool = create_pool(10);
+    // debugging without window
+    // while (1) {
+    //     update_grid();
+    // }
+
+    pool = create_pool(THREADS);
     if (!pool) {
         return EXIT_FAILURE;
     }

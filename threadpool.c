@@ -5,6 +5,7 @@
 pthread_mutex_t queue_mutex;
 package dequeue(queue *q);
 
+#include <stdio.h>
 void *worker_start(void *handle)
 {
     worker_handle *h = handle;
@@ -14,7 +15,7 @@ void *worker_start(void *handle)
 
     while (*(h->running)) {
         input = dequeue(h->task_queue);
-        if (input.data_p == NULL) {
+        if (input.func == NULL) {
             sched_yield();
             continue;
         }
