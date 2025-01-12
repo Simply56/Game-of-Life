@@ -12,14 +12,14 @@
 #include <time.h>
 
 #define GRID_W 200 // Grid width
-#define GRID_H 200  // Grid height
-#define CELL_SIZE 3
+#define GRID_H 200 // Grid height
+#define CELL_SIZE 2
 
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
-// #define MAP_SIZE 32768
+#define MAP_SIZE 32768
 // #define MAP_SIZE 16384
-#define MAP_SIZE 8192
+// #define MAP_SIZE 8192
 // #define MAP_SIZE 4096
 
 // #define MAP_SIZE 2048
@@ -304,6 +304,18 @@ void cleanup()
 // Main function
 int main(int argc, char **argv)
 {
+    
+    const GLubyte *renderer = glGetString(GL_RENDERER);                       // Get renderer string
+    const GLubyte *vendor = glGetString(GL_VENDOR);                           // Get vendor name
+    const GLubyte *version = glGetString(GL_VERSION);                         // Get OpenGL version
+    const GLubyte *shadingVersion = glGetString(GL_SHADING_LANGUAGE_VERSION); // Get GLSL version (if supported)
+
+    // Print GPU information
+    printf("Renderer: %s\n", renderer);
+    printf("Vendor: %s\n", vendor);
+    printf("OpenGL Version: %s\n", version);
+    printf("GLSL Version: %s\n", shadingVersion);
+
     assert(MAP_SIZE % BUCKETS_PER_THREAD == 0);
     atexit(cleanup); // Register cleanup function
     double load_factor = ((double) GRID_H * (double) GRID_W) / (double) MAP_SIZE;
