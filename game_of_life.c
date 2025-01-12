@@ -12,18 +12,21 @@
 #include <time.h>
 
 #define GRID_W 200 // Grid width
-#define GRID_H 200 // Grid height
-#define CELL_SIZE 2
+#define GRID_H 200  // Grid height
+#define CELL_SIZE 3
 
-// #define MAP_SIZE UINT16_MAX // max value (not a power of two)
-#define MAP_SIZE 32768
+// #define MAP_SIZE 131072
+// #define MAP_SIZE 65536
+// #define MAP_SIZE 32768
+// #define MAP_SIZE 16384
+#define MAP_SIZE 8192
 // #define MAP_SIZE 4096
 
 // #define MAP_SIZE 2048
 
 #define DELAY 0 // mili
 // MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
-#define BUCKETS_PER_THREAD 1024
+#define BUCKETS_PER_THREAD 64
 #define THREADS 10
 
 lifeHashMap *map;
@@ -68,14 +71,11 @@ void count_neighbors(int x, int y, uint8_t *blue_count, uint8_t *orange_count)
 {
     for (int8_t dy = -1; dy <= 1; dy++) {
         for (int8_t dx = -1; dx <= 1; dx++) {
-            if ((dy == -1 && y == 0) || (dx == -1 && x == 0)) { // avoid underflow
-                continue;
-            }
             if (dx == 0 && dy == 0) {
                 continue;
             }
-            uint16_t ny = y + dy;
-            uint16_t nx = x + dx;
+            int ny = y + dy;
+            int nx = x + dx;
             cell *neighbour = lifemap_get(map, nx, ny);
             if (neighbour != NULL) {
                 if (neighbour->state == BLUE) {
@@ -119,21 +119,17 @@ uint8_t cell_change(int x, int y)
     return cell;
 }
 
-void update_bucket(void *bucket)
+void update_bucket(void *bucket_p)
 {
-    if (bucket == NULL) {
+    if (bucket_p == NULL) {
         return;
     }
+    cellNode **b = bucket_p;
 
-    cellNode *curr = bucket;
+    cellNode *curr = *b;
     while (curr) {
         for (int8_t dy = -1; dy <= 1; dy++) {
             for (int8_t dx = -1; dx <= 1; dx++) {
-                //avoid underflow
-                if ((dy == -1 && curr->c.y == 0) || (dx == -1 && curr->c.x == 0)) {
-                    continue;
-                }
-
                 cell new_cell = { .x = curr->c.x + dx, .y = curr->c.y + dy, .state = cell_change(curr->c.x + dx, curr->c.y + dy) };
                 lifemap_set(new_map, new_cell);
             }
@@ -151,12 +147,13 @@ void update_buckets(void *start_bucket)
     }
 }
 
-void purify_bucket(void *bucket)
+void purify_bucket(void *bucket_p)
 {
-    if (bucket == NULL) {
+    if (bucket_p == NULL) {
         return;
     }
-    cellNode *curr = bucket;
+    cellNode **b = bucket_p;
+    cellNode *curr = *b;
 
     while (curr) {
         cellNode *tmp = curr->next;
@@ -168,14 +165,23 @@ void purify_bucket(void *bucket)
     }
 }
 
+void purify_buckets(void *start_bucket)
+{
+    assert(start_bucket != NULL);
+    for (int i = 0; i < BUCKETS_PER_THREAD; i++) {
+        purify_bucket(start_bucket);
+        start_bucket += sizeof(cellNode *);
+    }
+}
+
 void for_buckets(lifeHashMap *life_map, void (*f)(void *))
 {
     pool->tasks->queued_count = 0;
-    for (uint16_t i = 0; i < life_map->size; i += BUCKETS_PER_THREAD) {
+    for (uint32_t i = 0; i < life_map->size; i += BUCKETS_PER_THREAD) {
         // if (life_map->buckets[i] == NULL) {
         //     continue;
         // }
-        enqueue(pool->tasks, (package){ .data_p = life_map->buckets + i, .func = f });
+        enqueue(pool->tasks, (package){ .data_p = &(life_map->buckets[i]), .func = f });
         pool->tasks->queued_count++;
     }
 
@@ -193,15 +199,16 @@ void update_grid()
     // return;
 
     // purify new_map
-    // for_buckets(new_map, purify_bucket);
-    lifemap_free(new_map);
-    new_map = innit(MAP_SIZE, 0, 0);
+    for_buckets(new_map, purify_buckets);
+    // lifemap_free(new_map);
+    // new_map = innit(MAP_SIZE, 0, 0);
+
     // compute new_map
     for_buckets(map, update_buckets);
 
     // single threaded version for comparison
     // for (uint16_t i = 0; i < MAP_SIZE; i += BUCKETS_PER_THREAD) {
-    //     update_buckets(map->buckets + i);
+    //     update_buckets(&(map->buckets[i]));
     // }
 
     // swap
@@ -216,7 +223,7 @@ void draw_grid()
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(1, 1, 1, 1);
 
-    for (uint16_t i = 0; i < map->size; i++) {
+    for (uint32_t i = 0; i < map->size; i++) {
         cellNode *curr = map->buckets[i];
         int slot_len = 0;
         while (curr) {
@@ -278,7 +285,7 @@ void timer_callback(int _)
 {
     update_grid();
     glutPostRedisplay();
-    glutTimerFunc(DELAY, timer_callback, 0); // Schedule next update in DELAYms
+    glutTimerFunc(DELAY, timer_callback, _); // Schedule next update in DELAYms
 }
 
 void idle_callback()
@@ -303,15 +310,16 @@ int main(int argc, char **argv)
     printf("Load factor: %f\n", load_factor);
     initialize_map();
 
+    pool = create_pool(THREADS);
+    if (!pool) {
+        return EXIT_FAILURE;
+    }
+
     // debugging without window
     // while (1) {
     //     update_grid();
     // }
 
-    pool = create_pool(THREADS);
-    if (!pool) {
-        return EXIT_FAILURE;
-    }
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(GRID_W * CELL_SIZE, GRID_H * CELL_SIZE);

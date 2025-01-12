@@ -16,8 +16,8 @@
 
 struct cell
 {
-    uint16_t x;
-    uint16_t y;
+    int x;
+    int y;
     uint8_t state;
 } typedef cell;
 
@@ -39,15 +39,15 @@ struct cellNode
 struct lifeHashMap
 {
     cellNode **buckets; // array of pointers
-    uint16_t size;
+    uint32_t size;
     pthread_rwlock_t *locks; // fixed width array
 } typedef lifeHashMap;
 
 void print_cell(cell c);
 void print_map(lifeHashMap *map);
 
-lifeHashMap *innit(uint16_t size, int width, int height);
+lifeHashMap *innit(uint32_t size, int width, int height);
 void lifemap_free(lifeHashMap *map);
 
-cell *lifemap_get(lifeHashMap *map, uint16_t x, uint16_t y);
+cell *lifemap_get(lifeHashMap *map, int x, int y);
 bool lifemap_set(lifeHashMap *map, cell c);
