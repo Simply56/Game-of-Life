@@ -17,12 +17,11 @@
 
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
-#define MAP_SIZE 32768
+// #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
 // #define MAP_SIZE 8192
 // #define MAP_SIZE 4096
-
-// #define MAP_SIZE 2048
+#define MAP_SIZE 2048
 
 #define DELAY 0 // mili
 // MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD

@@ -105,38 +105,26 @@ bool lifemap_del(lifeHashMap *map, cell c)
 // create new or set existing to new value
 bool __lifemap_set(lifeHashMap *map, cell c)
 {
-    // printf("x: %d, ", c.x);
-    // printf("y: %d\n", c.y);
     if (c.state == EMPTY) {
-        lifemap_del(map, c);
-        return true;
+        return lifemap_del(map, c);
     }
     uint32_t key = hash(c.x, c.y, map->size);
-    cellNode *curr = map->buckets[key];
-    if (curr == NULL) {
-        cellNode *new_node = calloc(1, sizeof(cellNode));
-        if (new_node == NULL)
-            return false;
 
-        new_node->c = c;
-        map->buckets[key] = new_node;
-        return true;
-    }
-
-    while (curr->next) {
+    // try changing value if the node exists
+    for (cellNode *curr = map->buckets[key]; curr; curr = curr->next) {
         if (curr->c.x == c.x && curr->c.y == c.y) {
             curr->c.state = c.state;
-            // puts("hit");
             return true;
         }
-        curr = curr->next;
     }
-    cellNode *new_node = calloc(1, sizeof(cellNode));
+
+    cellNode *new_node = malloc(sizeof(cellNode));
     if (new_node == NULL)
         return false;
-
     new_node->c = c;
-    curr->next = new_node;
+
+    new_node->next = map->buckets[key];
+    map->buckets[key] = new_node;
     return true;
 }
 
