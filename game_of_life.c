@@ -18,14 +18,14 @@
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
-// #define MAP_SIZE 16384
+#define MAP_SIZE 16384
 // #define MAP_SIZE 8192
 // #define MAP_SIZE 4096
-#define MAP_SIZE 2048
+// #define MAP_SIZE 2048
 
 #define DELAY 0 // mili
 // MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
-#define BUCKETS_PER_THREAD 64
+#define BUCKETS_PER_THREAD 32
 #define THREADS 10
 
 lifeHashMap *map;
@@ -99,8 +99,8 @@ uint8_t cell_change(int x, int y)
         return cell + 1;
     }
 
-    uint8_t blue_count = 0;
-    uint8_t orange_count = 0;
+    uint8_t blue_count, orange_count;
+    blue_count = orange_count = 0;
     count_neighbors(x, y, &blue_count, &orange_count);
     uint8_t count = blue_count + orange_count;
 
@@ -154,6 +154,7 @@ void purify_bucket(void *bucket_p)
     cellNode **b = bucket_p;
     cellNode *curr = *b;
 
+    // keeps the cells that can be reused
     while (curr) {
         cellNode *tmp = curr->next;
         if (!lifemap_get(map, curr->c.x, curr->c.y)) {
@@ -162,6 +163,14 @@ void purify_bucket(void *bucket_p)
         }
         curr = tmp;
     }
+
+    // removes the entire bucket
+    // while (curr) {
+    //     cellNode *tmp = curr;
+    //     curr = curr->next;
+    //     free(tmp);
+    // }
+    // *b = NULL;
 }
 
 void purify_buckets(void *start_bucket)
@@ -303,7 +312,6 @@ void cleanup()
 // Main function
 int main(int argc, char **argv)
 {
-    
     const GLubyte *renderer = glGetString(GL_RENDERER);                       // Get renderer string
     const GLubyte *vendor = glGetString(GL_VENDOR);                           // Get vendor name
     const GLubyte *version = glGetString(GL_VERSION);                         // Get OpenGL version

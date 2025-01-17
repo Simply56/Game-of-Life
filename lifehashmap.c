@@ -71,9 +71,6 @@ cell *lifemap_get(lifeHashMap *map, int x, int y)
 
 bool lifemap_del(lifeHashMap *map, cell c)
 {
-    // printf("removing: ");
-    // print_cell(c);
-
     uint32_t key = hash(c.x, c.y, map->size);
     cellNode *curr = map->buckets[key];
     if (curr == NULL) {
@@ -121,10 +118,11 @@ bool __lifemap_set(lifeHashMap *map, cell c)
     cellNode *new_node = malloc(sizeof(cellNode));
     if (new_node == NULL)
         return false;
-    new_node->c = c;
 
+    new_node->c = c;
     new_node->next = map->buckets[key];
     map->buckets[key] = new_node;
+
     return true;
 }
 
