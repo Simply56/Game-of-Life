@@ -5,7 +5,6 @@
 pthread_mutex_t queue_mutex;
 package dequeue(queue *q);
 
-#include <stdio.h>
 void *worker_start(void *handle)
 {
     worker_handle *h = handle;
