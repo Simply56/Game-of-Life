@@ -155,6 +155,19 @@ void lifemap_free(lifeHashMap *map)
     free(map);
 }
 
+size_t count_items(lifeHashMap *map)
+{
+    size_t result = 0;
+    for (uint32_t i = 0; i < map->size; i++) {
+        cellNode *curr = map->buckets[i];
+        while (curr) {
+            result++;
+            curr = curr->next;
+        }
+    }
+    return result;
+}
+
 void print_cell(cell c)
 {
     char *s = NULL;

@@ -8,21 +8,20 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
-#define GRID_W 50 // Grid width
-#define GRID_H 50 // Grid height
-#define CELL_SIZE 10
+#define GRID_W 200 // Grid width
+#define GRID_H 200 // Grid height
+#define CELL_SIZE 3
 
 // #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
-// #define MAP_SIZE 8192
+#define MAP_SIZE 8192
 // #define MAP_SIZE 4096
-#define MAP_SIZE 2048
+// #define MAP_SIZE 2048
 
 #define DELAY 0 // mili
 // MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
@@ -321,15 +320,15 @@ int main(int argc, char **argv)
     assert(MAP_SIZE % BUCKETS_PER_THREAD == 0);
     atexit(cleanup); // Register cleanup function
 
-    double load_factor = ((double) GRID_H * (double) GRID_W) / (double) MAP_SIZE;
-    printf("Load factor: %f\n", load_factor);
-
     initialize_map();
 
     pool = create_pool(THREADS);
     if (!pool) {
         return EXIT_FAILURE;
     }
+
+    double load_factor = (double) count_items(map) / (double) MAP_SIZE;
+    printf("Load factor: %f\n", load_factor);
 
     // debugging without window
     // while (1) {
