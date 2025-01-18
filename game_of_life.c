@@ -334,8 +334,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    print_load_factor();
-
+    printf("enqueues per update: %d\n", MAP_SIZE / BUCKETS_PER_THREAD);
     // debugging without window
     // while (1) {
     //     update_grid();
