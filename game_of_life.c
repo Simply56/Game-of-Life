@@ -19,8 +19,8 @@
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
-#define MAP_SIZE 8192
-// #define MAP_SIZE 4096
+// #define MAP_SIZE 8192
+#define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 
 #define DELAY 0 // mili
@@ -32,6 +32,12 @@ lifeHashMap *map;
 lifeHashMap *new_map;
 
 thread_pool *pool;
+
+void print_load_factor()
+{
+    double load_factor = (double) count_items(map) / (double) MAP_SIZE;
+    printf("Load factor: %f\n", load_factor);
+}
 
 // Function to calculate and print FPS, overwriting the last line
 void print_fps()
@@ -56,6 +62,7 @@ void print_fps()
 
         // Print FPS and overwrite the same line
         printf("FPS: %.2f\n", fps);
+        print_load_factor();
     }
 }
 
@@ -327,8 +334,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    double load_factor = (double) count_items(map) / (double) MAP_SIZE;
-    printf("Load factor: %f\n", load_factor);
+    print_load_factor();
 
     // debugging without window
     // while (1) {
