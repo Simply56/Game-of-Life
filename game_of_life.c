@@ -10,18 +10,20 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define GRID_W 400 // Grid width
-#define GRID_H 400 // Grid height
-#define CELL_SIZE 3
+#define GRID_W 50 // Grid width
+#define GRID_H 50 // Grid height
+#define CELL_SIZE 15
 
 // #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
-#define MAP_SIZE 16384
+// #define MAP_SIZE 16384
 // #define MAP_SIZE 8192
 // #define MAP_SIZE 4096
-// #define MAP_SIZE 2048
+#define MAP_SIZE 2048
+
+#define BENCHMARK true
 
 #define DELAY 0 // mili
 // MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
@@ -69,8 +71,8 @@ void print_fps()
 // Function to initialize the grid with random cells
 void initialize_map()
 {
-    map = innit(MAP_SIZE, GRID_W, GRID_H);
-    new_map = innit(MAP_SIZE, 0, 0);
+    map = innit(MAP_SIZE, GRID_W, GRID_H, BENCHMARK);
+    new_map = innit(MAP_SIZE, 0, 0, BENCHMARK);
 }
 
 void count_neighbors(int x, int y, uint8_t *blue_count, uint8_t *orange_count)
@@ -278,7 +280,7 @@ void draw_grid()
                     int y2 = y1 + CELL_SIZE;
 
                     // Draw the cell as a quad
-                    glVertex2im(x1, y1);
+                    glVertex2i(x1, y1);
                     glVertex2i(x2, y1);
                     glVertex2i(x2, y2);
                     glVertex2i(x1, y2);

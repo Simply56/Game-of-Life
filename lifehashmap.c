@@ -12,7 +12,7 @@ uint32_t hash(int x, int y, uint32_t modulo)
     return combined % modulo;
 }
 
-lifeHashMap *innit(uint32_t size, int width, int height)
+lifeHashMap *innit(uint32_t size, int width, int height, int benchmark)
 {
     cellNode **buckets = NULL;
     lifeHashMap *map = NULL;
@@ -31,6 +31,11 @@ lifeHashMap *innit(uint32_t size, int width, int height)
     for (uint32_t i = 0; i < size; i++) {
         pthread_rwlock_init(&(map->locks[i]), NULL);
     }
+
+    if (benchmark) {
+        srand(0);
+    }
+
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {

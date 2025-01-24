@@ -47,7 +47,7 @@ void print_cell(cell c);
 void print_map(lifeHashMap *map);
 size_t count_items(lifeHashMap * map);
 
-lifeHashMap *innit(uint32_t size, int width, int height);
+lifeHashMap *innit(uint32_t size, int width, int height, int benchmark);
 void lifemap_free(lifeHashMap *map);
 
 cell *lifemap_get(lifeHashMap *map, int x, int y);
