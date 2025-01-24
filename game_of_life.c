@@ -10,25 +10,25 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define GRID_W 50 // Grid width
-#define GRID_H 50 // Grid height
-#define CELL_SIZE 15
+#define GRID_W 500 // Grid width
+#define GRID_H 500 // Grid height
+#define CELL_SIZE 2
 
 // #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
-// #define MAP_SIZE 32768
+#define MAP_SIZE 32768
 // #define MAP_SIZE 16384
 // #define MAP_SIZE 8192
 // #define MAP_SIZE 4096
-#define MAP_SIZE 2048
+// #define MAP_SIZE 2048
 
-#define BENCHMARK true
+#define BENCHMARK (false)
 
 #define DELAY 0 // mili
 // MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
-#define BUCKETS_PER_THREAD 32
-#define THREADS 10
+#define BUCKETS_PER_THREAD 64
+#define THREADS 15
 
 lifeHashMap *map;
 lifeHashMap *new_map;
@@ -37,13 +37,23 @@ thread_pool *pool;
 
 void print_load_factor()
 {
+    if (!BENCHMARK)
+    {
+        return;
+    }
+    
     double load_factor = (double) count_items(map) / (double) MAP_SIZE;
-    printf("Load factor: %f\n", load_factor);
+    printf("Load factor: %f ", load_factor);
 }
 
 // Function to calculate and print FPS, overwriting the last line
 void print_fps()
 {
+    if (!BENCHMARK)
+    {
+        return;
+    }
+    
     static int frame_count = 0;
     static double last_time = 0;
     static double fps = 0.0;
@@ -333,7 +343,7 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    printf("enqueues per update: %d\n", MAP_SIZE / BUCKETS_PER_THREAD);
+    printf("Enqueues per update: %d\n", MAP_SIZE / BUCKETS_PER_THREAD);
     // debugging without window
     // while (1) {
     //     update_grid();
