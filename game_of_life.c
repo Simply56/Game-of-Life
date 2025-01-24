@@ -10,17 +10,17 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define GRID_W 200 // Grid width
-#define GRID_H 200 // Grid height
+#define GRID_W 400 // Grid width
+#define GRID_H 400 // Grid height
 #define CELL_SIZE 3
 
 // #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
-// #define MAP_SIZE 16384
+#define MAP_SIZE 16384
 // #define MAP_SIZE 8192
-#define MAP_SIZE 4096
+// #define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 
 #define DELAY 0 // mili
@@ -238,58 +238,55 @@ void draw_grid()
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(1, 1, 1, 1);
 
-    for (uint32_t i = 0; i < map->size; i++) {
-        cellNode *curr = map->buckets[i];
-        int slot_len = 0;
-        while (curr) {
-            slot_len++;
-            assert(curr->c.state != EMPTY);
-            // print_cell(curr->c);
-            if (curr->c.state == ORANGE) {
-                glColor3f(1, 0.6f, 0);
-            } else if (curr->c.state == BLUE) {
-                glColor3f(0, 0.6f, 1);
-            } else {
-                switch (curr->c.state) {
-                case 3:
-                    glColor3f(0.4f, 0.4f, 0.4f);
-                    break;
-                case 4:
-                    glColor3f(0.5f, 0.5f, 0.5f);
-                    break;
-                case 5:
-                    glColor3f(0.58f, 0.58f, 0.58f);
-                    break;
-
-                default:
-                    glColor3f(0.7f, 0.7f, 0.7f);
-                    // printf("slot len: %d\n", slot_len);
-                    // print_cell(curr->c);
-
-                    break;
-                }
-            }
-            if (curr->c.x > GRID_W || curr->c.y > GRID_H) {
-                // don't draw off-screen cells
-                // printf("%d, %d: skipping off-screen cell\n", curr->c.x, curr->c.y);
-                curr = curr->next;
-                continue;
-            }
-
-            int x1 = curr->c.x * CELL_SIZE;
-            int y1 = curr->c.y * CELL_SIZE;
-            int x2 = x1 + CELL_SIZE;
-            int y2 = y1 + CELL_SIZE;
-
-            glBegin(GL_QUADS);
-            glVertex2i(x1, y1);
-            glVertex2i(x2, y1);
-            glVertex2i(x2, y2);
-            glVertex2i(x1, y2);
-            glEnd();
-
-            curr = curr->next;
+    // Group cells by state
+    // goes over the whole map 6 times but calls glcolor3f less
+    for (int state = 0; state < 7; state++) {
+        switch (state) {
+        case ORANGE:
+            glColor3f(1, 0.6f, 0);
+            break;
+        case BLUE:
+            glColor3f(0, 0.6f, 1);
+            break;
+        case DEAD:
+            glColor3f(0.4f, 0.4f, 0.4f);
+            break;
+        case 4:
+            glColor3f(0.5f, 0.5f, 0.5f);
+            break;
+        case 5:
+            glColor3f(0.58f, 0.58f, 0.58f);
+            break;
+        default:
+            glColor3f(0.7f, 0.7f, 0.7f);
+            break;
         }
+
+        glBegin(GL_QUADS);
+        for (uint32_t i = 0; i < map->size; i++) {
+            cellNode *curr = map->buckets[i];
+            while (curr) {
+                if (curr->c.state == state) {
+                    if (curr->c.x > GRID_W || curr->c.y > GRID_H) {
+                        curr = curr->next;
+                        continue; // Skip off-screen cells
+                    }
+
+                    int x1 = curr->c.x * CELL_SIZE;
+                    int y1 = curr->c.y * CELL_SIZE;
+                    int x2 = x1 + CELL_SIZE;
+                    int y2 = y1 + CELL_SIZE;
+
+                    // Draw the cell as a quad
+                    glVertex2im(x1, y1);
+                    glVertex2i(x2, y1);
+                    glVertex2i(x2, y2);
+                    glVertex2i(x1, y2);
+                }
+                curr = curr->next;
+            }
+        }
+        glEnd();
     }
 
     glutSwapBuffers();
