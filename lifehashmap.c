@@ -36,7 +36,6 @@ lifeHashMap *innit(uint32_t size, int width, int height, int benchmark)
         srand(0);
     }
 
-
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             lifemap_set(map, (cell){ .x = x, .y = y, .state = rand() % 3 });
@@ -59,9 +58,13 @@ cell *__lifemap_get(lifeHashMap *map, int x, int y)
     cellNode *curr = map->buckets[key];
     while (curr) {
         if (curr->c.x == x && curr->c.y == y) {
+            if (curr->c.state == EMPTY) {
+                return NULL;
+            }
             return &curr->c;
+
+            curr = curr->next;
         }
-        curr = curr->next;
     }
     return NULL;
 }
@@ -103,7 +106,7 @@ bool lifemap_del(lifeHashMap *map, cell c)
 
     return false;
 }
-
+// new feature: always keep at least 1 bucket
 // create new or set existing to new value
 bool __lifemap_set(lifeHashMap *map, cell c)
 {

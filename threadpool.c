@@ -114,7 +114,7 @@ package dequeue(queue *q)
     result.data_p = NULL;
     result.func = NULL;
     if (q->left) {
-        result = q->left->pckg;
+        result = q->left->packg;
 
         node *tmp = q->left;
         q->left = q->left->next;
@@ -139,7 +139,7 @@ bool enqueue(queue *q, package p)
         pthread_mutex_unlock(&queue_mutex);
         return false;
     }
-    new_node->pckg = p;
+    new_node->packg = p;
 
     if (q->right == NULL) {
         q->left = q->right = new_node;

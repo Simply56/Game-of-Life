@@ -11,23 +11,23 @@
 #include <time.h>
 
 #define GRID_W 500 // Grid width
-#define GRID_H 500 // Grid height
-#define CELL_SIZE 2
+#define GRID_H 500  // Grid height
+#define CELL_SIZE 1
 
 // #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
-// #define MAP_SIZE 65536
-#define MAP_SIZE 32768
+#define MAP_SIZE 65536
+// #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
 // #define MAP_SIZE 8192
 // #define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 
-#define BENCHMARK (false)
+#define BENCHMARK (true)
 
 #define DELAY 0 // mili
 // MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
-#define BUCKETS_PER_THREAD 64
+#define BUCKETS_PER_THREAD 128
 #define THREADS 15
 
 lifeHashMap *map;
@@ -37,11 +37,10 @@ thread_pool *pool;
 
 void print_load_factor()
 {
-    if (!BENCHMARK)
-    {
+    if (!BENCHMARK) {
         return;
     }
-    
+
     double load_factor = (double) count_items(map) / (double) MAP_SIZE;
     printf("Load factor: %f ", load_factor);
 }
@@ -49,11 +48,10 @@ void print_load_factor()
 // Function to calculate and print FPS, overwriting the last line
 void print_fps()
 {
-    if (!BENCHMARK)
-    {
+    if (!BENCHMARK) {
         return;
     }
-    
+
     static int frame_count = 0;
     static double last_time = 0;
     static double fps = 0.0;
@@ -173,23 +171,23 @@ void purify_bucket(void *bucket_p)
     cellNode **b = bucket_p;
     cellNode *curr = *b;
 
-    // keeps the cells that can be reused
-    while (curr) {
-        cellNode *tmp = curr->next;
-        if (!lifemap_get(map, curr->c.x, curr->c.y)) {
-            lifemap_set(new_map, (cell){ .x = curr->c.x, .y = curr->c.y, .state = EMPTY });
-            curr = tmp;
-        }
-        curr = tmp;
-    }
+    //  keeps the cells that can be reused
+    // while (curr) {
+    //     cellNode *tmp = curr->next;
+    //     if (!lifemap_get(map, curr->c.x, curr->c.y)) {
+    //         lifemap_set(new_map, (cell){ .x = curr->c.x, .y = curr->c.y, .state = EMPTY });
+    //         curr = tmp;
+    //     }
+    //     curr = tmp;
+    // }
 
     // removes the entire bucket
-    // while (curr) {
-    //     cellNode *tmp = curr;
-    //     curr = curr->next;
-    //     free(tmp);
-    // }
-    // *b = NULL;
+    while (curr) {
+        cellNode *tmp = curr;
+        curr = curr->next;
+        free(tmp);
+    }
+    *b = NULL;
 }
 
 void purify_buckets(void *start_bucket)

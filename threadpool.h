@@ -11,7 +11,7 @@ struct package
 
 struct node
 {
-    package pckg;
+    package packg;
     struct node *next;
 } typedef node;
 
