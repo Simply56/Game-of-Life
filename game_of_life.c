@@ -10,25 +10,26 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define GRID_W 500 // Grid width
-#define GRID_H 500  // Grid height
+#define GRID_W 200 // Grid width
+#define GRID_H 200 // Grid height
 #define CELL_SIZE 1
 
 // #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
-#define MAP_SIZE 65536
+// #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
 // #define MAP_SIZE 8192
-// #define MAP_SIZE 4096
+#define MAP_SIZE 4096
 // #define MAP_SIZE 2048
+// #define MAP_SIZE 4
 
 #define BENCHMARK (true)
 
 #define DELAY 0 // mili
 // MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
-#define BUCKETS_PER_THREAD 128
-#define THREADS 15
+#define BUCKETS_PER_THREAD 256
+#define THREADS 11
 
 lifeHashMap *map;
 lifeHashMap *new_map;
@@ -292,6 +293,7 @@ void draw_grid()
                     glVertex2i(x2, y1);
                     glVertex2i(x2, y2);
                     glVertex2i(x1, y2);
+                    // glVertex2i(curr->c.x, curr->c.y);
                 }
                 curr = curr->next;
             }
@@ -323,7 +325,7 @@ void cleanup()
     destroy_pool(pool);
     printf("Cleaned up resources.\n");
 }
-// Main function
+
 int main(int argc, char **argv)
 {
     printf("Renderer: %s\n", glGetString(GL_RENDERER));                     // Get renderer string

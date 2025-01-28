@@ -58,13 +58,9 @@ cell *__lifemap_get(lifeHashMap *map, int x, int y)
     cellNode *curr = map->buckets[key];
     while (curr) {
         if (curr->c.x == x && curr->c.y == y) {
-            if (curr->c.state == EMPTY) {
-                return NULL;
-            }
-            return &curr->c;
-
-            curr = curr->next;
+           return &curr->c;
         }
+        curr = curr->next;
     }
     return NULL;
 }
@@ -84,12 +80,13 @@ bool lifemap_del(lifeHashMap *map, cell c)
     if (curr == NULL) {
         return false;
     }
-
-    // remove head
+    // set node to empty
     if (curr->c.x == c.x && curr->c.y == c.y) {
         cellNode *tmp = curr;
         map->buckets[key] = curr->next;
         free(tmp);
+
+        // map->buckets[key]->c.state = EMPTY;
         return true;
     }
 
@@ -106,7 +103,6 @@ bool lifemap_del(lifeHashMap *map, cell c)
 
     return false;
 }
-// new feature: always keep at least 1 bucket
 // create new or set existing to new value
 bool __lifemap_set(lifeHashMap *map, cell c)
 {
