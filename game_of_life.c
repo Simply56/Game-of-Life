@@ -10,24 +10,24 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define GRID_W 200 // Grid width
-#define GRID_H 200 // Grid height
-#define CELL_SIZE 1
+#define GRID_W 300 // Grid width
+#define GRID_H 300 // Grid height
+#define CELL_SIZE 3
 
+/* MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD */
 // #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
-// #define MAP_SIZE 8192
-#define MAP_SIZE 4096
+#define MAP_SIZE 8192
+// #define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 // #define MAP_SIZE 4
 
 #define BENCHMARK (true)
 
 #define DELAY 0 // mili
-// MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD
 #define BUCKETS_PER_THREAD 256
 #define THREADS 11
 
@@ -46,7 +46,6 @@ void print_load_factor()
     printf("Load factor: %f ", load_factor);
 }
 
-// Function to calculate and print FPS, overwriting the last line
 void print_fps()
 {
     if (!BENCHMARK) {
@@ -57,27 +56,23 @@ void print_fps()
     static double last_time = 0;
     static double fps = 0.0;
 
-    // Get the current time in seconds
     struct timespec current_time;
     clock_gettime(CLOCK_MONOTONIC, &current_time);
     double now = current_time.tv_sec + (current_time.tv_nsec / 1e9);
 
-    // Increment frame count
     frame_count++;
 
     // Calculate FPS every second
     if (now - last_time >= 1.0) {
-        fps = frame_count / (now - last_time); // Frames per second
-        frame_count = 0;                       // Reset frame count
-        last_time = now;                       // Reset time
-
-        // Print FPS and overwrite the same line
+        fps = frame_count / (now - last_time);
+        frame_count = 0;
+        last_time = now;
         printf("FPS: %.2f\n", fps);
         print_load_factor();
     }
 }
 
-// Function to initialize the grid with random cells
+// To initialize the grid with random cells
 void initialize_map()
 {
     map = innit(MAP_SIZE, GRID_W, GRID_H, BENCHMARK);
@@ -88,7 +83,7 @@ void count_neighbors(int x, int y, uint8_t *blue_count, uint8_t *orange_count)
 {
     for (int8_t dy = -1; dy <= 1; dy++) {
         for (int8_t dx = -1; dx <= 1; dx++) {
-            if (dx == 0 && dy == 0) {
+            if (dx == 0 && dy == 0) { // skip self
                 continue;
             }
             int ny = y + dy;
@@ -207,7 +202,7 @@ void for_buckets(lifeHashMap *life_map, void (*f)(void *))
         // if (life_map->buckets[i] == NULL) {
         //     continue;
         // }
-        enqueue(pool->tasks, (package){ .data_p = &(life_map->buckets[i]), .func = f });
+        enqueue(pool->tasks, (package) { .data_p = &(life_map->buckets[i]), .func = f });
         pool->tasks->queued_count++;
     }
 
@@ -222,9 +217,7 @@ void for_buckets(lifeHashMap *life_map, void (*f)(void *))
 void update_grid()
 {
     print_fps();
-    // return;
 
-    // purify new_map
     for_buckets(new_map, purify_buckets);
     // lifemap_free(new_map);
     // new_map = innit(MAP_SIZE, 0, 0);
@@ -232,12 +225,12 @@ void update_grid()
     // compute new_map
     for_buckets(map, update_buckets);
 
-    // single threaded version for comparison
+    // Single threaded version for comparison
     // for (uint16_t i = 0; i < MAP_SIZE; i += BUCKETS_PER_THREAD) {
     //     update_buckets(&(map->buckets[i]));
     // }
 
-    // swap
+    // swap pointers
     void *tmp = map;
     map = new_map;
     new_map = tmp;
@@ -250,7 +243,7 @@ void draw_grid()
     glClearColor(1, 1, 1, 1);
 
     // Group cells by state
-    // goes over the whole map 6 times but calls glcolor3f less
+    // Goes over the whole map 6 times reducing glcolor3f calls
     for (int state = 0; state < 7; state++) {
         switch (state) {
         case ORANGE:
@@ -311,7 +304,7 @@ void timer_callback(int _)
     glutPostRedisplay();
     glutTimerFunc(DELAY, timer_callback, _); // Schedule next update in DELAYms
 }
-
+// Faster when delay is 0
 void idle_callback()
 {
     update_grid();

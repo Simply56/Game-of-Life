@@ -39,14 +39,14 @@ struct cellNode
 
 struct lifeHashMap
 {
-    cellNode **buckets; // array of pointers
+    cellNode **buckets; // fixed width array of pointers
     uint32_t size;
     pthread_rwlock_t *locks; // fixed width array
 } typedef lifeHashMap;
 
 void print_cell(cell c);
 void print_map(lifeHashMap *map);
-size_t count_items(lifeHashMap * map);
+size_t count_items(lifeHashMap *map);
 
 lifeHashMap *innit(uint32_t size, int width, int height, int benchmark);
 void lifemap_free(lifeHashMap *map);

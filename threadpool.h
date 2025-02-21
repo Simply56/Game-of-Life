@@ -16,7 +16,7 @@ struct node
     struct node *next;
 } typedef node;
 
-// queue of pointers to data
+// queue of pointers to data and function
 struct queue
 {
     node *left;
@@ -30,7 +30,7 @@ struct worker_handle
 {
     atomic_int *completed_count_p; // pointer to the varible containing the number of completed tasks
     atomic_bool *running;          // pointer the variable containing if the threads should terminate
-    queue *task_queue;             // pointer to the task queue
+    queue *task_queue;
 } typedef worker_handle;
 
 struct thread_pool

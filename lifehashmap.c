@@ -17,28 +17,30 @@ lifeHashMap *innit(uint32_t size, int width, int height, int benchmark)
     cellNode **buckets = NULL;
     lifeHashMap *map = NULL;
     pthread_rwlock_t *rw_locks = NULL;
+
     map = calloc(1, sizeof(lifeHashMap));
     buckets = calloc(size, sizeof(cellNode *));
     rw_locks = calloc(size, sizeof(pthread_rwlock_t));
     if (!map || !buckets || !rw_locks) {
         goto err;
     }
+
     map->size = size;
     map->buckets = buckets;
     map->locks = rw_locks;
 
-    // crete mutexes
+    // create rwlocks
     for (uint32_t i = 0; i < size; i++) {
         pthread_rwlock_init(&(map->locks[i]), NULL);
     }
 
     if (benchmark) {
-        srand(0);
+        srand(0); // set consistant seed when benchmarking
     }
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            lifemap_set(map, (cell){ .x = x, .y = y, .state = rand() % 3 });
+            lifemap_set(map, (cell) { .x = x, .y = y, .state = rand() % 3 });
         }
     }
 
@@ -58,7 +60,7 @@ cell *__lifemap_get(lifeHashMap *map, int x, int y)
     cellNode *curr = map->buckets[key];
     while (curr) {
         if (curr->c.x == x && curr->c.y == y) {
-           return &curr->c;
+            return &curr->c;
         }
         curr = curr->next;
     }
@@ -77,16 +79,16 @@ bool lifemap_del(lifeHashMap *map, cell c)
 {
     uint32_t key = hash(c.x, c.y, map->size);
     cellNode *curr = map->buckets[key];
+    // bucket is empty
     if (curr == NULL) {
         return false;
     }
-    // set node to empty
+    // remove in head
     if (curr->c.x == c.x && curr->c.y == c.y) {
         cellNode *tmp = curr;
         map->buckets[key] = curr->next;
         free(tmp);
 
-        // map->buckets[key]->c.state = EMPTY;
         return true;
     }
 
@@ -172,6 +174,7 @@ size_t count_items(lifeHashMap *map)
     return result;
 }
 
+// helper functions
 void print_cell(cell c)
 {
     char *s = NULL;
