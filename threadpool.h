@@ -4,44 +4,44 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-struct package
+typedef struct package
 {
     void *data_p;
     void (*func)(void *);
-} typedef package;
+} package;
 
-struct node
+typedef struct node
 {
     package packg;
     struct node *next;
-} typedef node;
+} node;
 
 // queue of pointers to data and function
-struct queue
+typedef struct queue
 {
     node *left;
     node *right;
     atomic_int queued_count;
     atomic_int completed_count;
 
-} typedef queue;
+} queue;
 
-struct worker_handle
+typedef struct worker_handle
 {
     atomic_int *completed_count_p; // pointer to the varible containing the number of completed tasks
     atomic_bool *running;          // pointer the variable containing if the threads should terminate
     queue *task_queue;
-} typedef worker_handle;
+} worker_handle;
 
-struct thread_pool
+typedef struct thread_pool
 {
-    queue *tasks; // linked list
+    queue *tasks; // linked litypedef st
     int thread_count;
     pthread_t *tids; // fixed width array
     atomic_bool running;
     worker_handle *w_handle;
 
-} typedef thread_pool;
+} thread_pool;
 
 bool enqueue(queue *q, package p);
 thread_pool *create_pool(int thread_count);

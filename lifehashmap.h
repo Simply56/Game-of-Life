@@ -15,12 +15,12 @@
 #define ORANGE ((uint8_t) 2)
 #define DEAD ((uint8_t) 3)
 
-struct cell
+typedef struct cell
 {
     int x;
     int y;
     uint8_t state;
-} typedef cell;
+} cell;
 
 /* CONVERSION TO BINARY TREE FROM LINKED LIST
  * The simplest possible iterator stores the last seen key, and then on the next iteration,
@@ -31,18 +31,18 @@ struct cell
  * my note: static variables are not thread safe, so use pointers to next instead
  */
 
-struct cellNode
+typedef struct cellNode
 {
     cell c;
     struct cellNode *next;
-} typedef cellNode;
+} cellNode;
 
-struct lifeHashMap
+typedef struct lifeHashMap
 {
     cellNode **buckets; // fixed width array of pointers
     uint32_t size;
     pthread_rwlock_t *locks; // fixed width array
-} typedef lifeHashMap;
+} lifeHashMap;
 
 void print_cell(cell c);
 void print_map(lifeHashMap *map);
