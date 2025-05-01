@@ -8,19 +8,21 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
+#include <unistd.h>
 
-#define GRID_W 950  // Grid width
-#define GRID_H 1010 // Grid height
-#define CELL_SIZE 1
+#define GRID_W 200 // Grid width
+#define GRID_H 200 // Grid height
+#define CELL_SIZE 4
 
 /* MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD */
-#define MAP_SIZE 262144
+// #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
-// #define MAP_SIZE 8192
+#define MAP_SIZE 8192
 // #define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 // #define MAP_SIZE 4
@@ -28,8 +30,8 @@
 #define BENCHMARK (true)
 
 #define DELAY 0 // mili
-#define BUCKETS_PER_THREAD 4096
-#define THREAD_COUNT 16
+#define BUCKETS_PER_THREAD 256
+#define THREAD_COUNT 12
 
 lifeHashMap *map;
 lifeHashMap *new_map;
@@ -289,20 +291,67 @@ void draw_grid()
     glutSwapBuffers();
 }
 
+// R G B A — this ends up in memory as: [B][G][R][A]
+uint32_t rgba(uint8_t r, uint8_t g, uint8_t b)
+{
+    return (b) | (g << 8) | (r << 16) | (0 << 24); // alpha = 0
+}
+
+bool binary_to_stdout()
+{
+    for (int32_t y = GRID_H - 1; y >= 0; y--) {
+        uint32_t buffer[GRID_H];
+        memset(buffer, 0xff, sizeof buffer);
+        for (uint32_t x = 0; x < GRID_W; x++) {
+            cell *cell = lifemap_get(map, x, y);
+            if (cell == NULL) {
+                continue;
+            }
+            switch (cell->state) {
+            case ORANGE:
+                buffer[x] = rgba(255, 128, 0);
+                break;
+            case BLUE:
+                buffer[x] = rgba(0, 128, 255);
+                break;
+            case DEAD:
+                buffer[x] = rgba(75, 75, 75);
+                break;
+            case 4:
+                buffer[x] = rgba(136, 136, 136);
+                break;
+            case 5:
+                buffer[x] = rgba(160, 160, 160);
+                break;
+            default:
+                buffer[x] = rgba(238, 238, 238);
+                break;
+            }
+        }
+        if (write(STDOUT_FILENO, buffer, sizeof buffer) != sizeof buffer) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 // Function to handle the timer callback for updates
 void timer_callback(int _)
 {
     update_grid();
     glutPostRedisplay();
+    binary_to_stdout();
     glutTimerFunc(DELAY, timer_callback, _); // Schedule next update in DELAYms
-    print_fps();
+    // print_fps();
 }
 // Faster when delay is 0
 void idle_callback()
 {
     update_grid();
-    glutPostRedisplay();
-    print_fps();
+    // glutPostRedisplay();
+    binary_to_stdout();
+    // print_fps();
 }
 
 void cleanup()
