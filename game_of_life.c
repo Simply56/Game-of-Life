@@ -28,6 +28,8 @@
 // #define MAP_SIZE 4
 
 #define BENCHMARK (true)
+#define VISUAL (true)
+#define BINARY_OUT (true)
 
 #define DELAY 0 // mili
 #define BUCKETS_PER_THREAD 256
@@ -37,6 +39,47 @@ lifeHashMap *map;
 lifeHashMap *new_map;
 
 thread_pool *pool;
+
+// R G B A — this ends up in memory as: [B][G][R][A]
+uint32_t rgba(uint8_t r, uint8_t g, uint8_t b)
+{
+    return (b) | (g << 8) | (r << 16) | (0 << 24); // alpha = 0
+}
+
+void binary_to_stdout()
+{
+    for (int32_t y = GRID_H - 1; y >= 0; y--) {
+        uint32_t buffer[GRID_H];
+        memset(buffer, 0xff, sizeof buffer);
+        for (uint32_t x = 0; x < GRID_W; x++) {
+            cell *cell = lifemap_get(map, x, y);
+            if (cell == NULL) {
+                continue;
+            }
+            switch (cell->state) {
+            case ORANGE:
+                buffer[x] = rgba(240, 128, 0);
+                break;
+            case BLUE:
+                buffer[x] = rgba(0, 128, 240);
+                break;
+            case DEAD:
+                buffer[x] = rgba(75, 75, 75);
+                break;
+            case 4:
+                buffer[x] = rgba(136, 136, 136);
+                break;
+            case 5:
+                buffer[x] = rgba(160, 160, 160);
+                break;
+            default:
+                buffer[x] = rgba(238, 238, 238);
+                break;
+            }
+        }
+       write(STDOUT_FILENO, buffer, sizeof buffer);
+    }
+}
 
 void print_load_factor()
 {
@@ -234,6 +277,13 @@ void update_grid()
     void *tmp = map;
     map = new_map;
     new_map = tmp;
+
+    if (BINARY_OUT)
+    {
+        binary_to_stdout();
+    }
+    
+
 }
 
 // Function to draw the grid using OpenGL
@@ -291,50 +341,6 @@ void draw_grid()
     glutSwapBuffers();
 }
 
-// R G B A — this ends up in memory as: [B][G][R][A]
-uint32_t rgba(uint8_t r, uint8_t g, uint8_t b)
-{
-    return (b) | (g << 8) | (r << 16) | (0 << 24); // alpha = 0
-}
-
-bool binary_to_stdout()
-{
-    for (int32_t y = GRID_H - 1; y >= 0; y--) {
-        uint32_t buffer[GRID_H];
-        memset(buffer, 0xff, sizeof buffer);
-        for (uint32_t x = 0; x < GRID_W; x++) {
-            cell *cell = lifemap_get(map, x, y);
-            if (cell == NULL) {
-                continue;
-            }
-            switch (cell->state) {
-            case ORANGE:
-                buffer[x] = rgba(255, 128, 0);
-                break;
-            case BLUE:
-                buffer[x] = rgba(0, 128, 255);
-                break;
-            case DEAD:
-                buffer[x] = rgba(75, 75, 75);
-                break;
-            case 4:
-                buffer[x] = rgba(136, 136, 136);
-                break;
-            case 5:
-                buffer[x] = rgba(160, 160, 160);
-                break;
-            default:
-                buffer[x] = rgba(238, 238, 238);
-                break;
-            }
-        }
-        if (write(STDOUT_FILENO, buffer, sizeof buffer) != sizeof buffer) {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 // Function to handle the timer callback for updates
 void timer_callback(int _)
@@ -349,8 +355,7 @@ void timer_callback(int _)
 void idle_callback()
 {
     update_grid();
-    // glutPostRedisplay();
-    binary_to_stdout();
+    glutPostRedisplay();
     // print_fps();
 }
 
@@ -380,10 +385,9 @@ int main(int argc, char **argv)
     }
 
     printf("Enqueues per update: %d\n", MAP_SIZE / BUCKETS_PER_THREAD);
-    // debugging without window
-    // while (1) {
-    //    update_grid();
-    // }
+    while (!VISUAL) {
+       update_grid();
+    }
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
