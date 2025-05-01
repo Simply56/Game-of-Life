@@ -12,28 +12,28 @@
 #include <time.h>
 #include <unistd.h>
 
-#define GRID_W 200 // Grid width
-#define GRID_H 200 // Grid height
-#define CELL_SIZE 4
+#define GRID_W 800 // Grid width
+#define GRID_H 800 // Grid height
+#define CELL_SIZE 1
 
 /* MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD */
-// #define MAP_SIZE 262144
+#define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
-#define MAP_SIZE 8192
+// #define MAP_SIZE 8192
 // #define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 // #define MAP_SIZE 4
 
 #define BENCHMARK (true)
-#define VISUAL (true)
+#define VISUAL (false)
 #define BINARY_OUT (true)
 
 #define DELAY 0 // mili
-#define BUCKETS_PER_THREAD 256
-#define THREAD_COUNT 12
+#define BUCKETS_PER_THREAD 4096
+#define THREAD_COUNT 14
 
 lifeHashMap *map;
 lifeHashMap *new_map;
@@ -77,7 +77,7 @@ void binary_to_stdout()
                 break;
             }
         }
-       write(STDOUT_FILENO, buffer, sizeof buffer);
+        write(STDOUT_FILENO, buffer, sizeof buffer);
     }
 }
 
@@ -88,7 +88,8 @@ void print_load_factor()
     }
 
     double load_factor = (double) count_items(map) / (double) MAP_SIZE;
-    printf("Load factor: %f ", load_factor);
+
+    fprintf(stderr, "Load factor: %f\n", load_factor);
 }
 
 void print_fps()
@@ -261,6 +262,7 @@ void for_buckets(lifeHashMap *life_map, void (*f)(void *))
 
 void update_grid()
 {
+    print_load_factor();
     for_buckets(new_map, purify_buckets);
     // lifemap_free(new_map);
     // new_map = innit(MAP_SIZE, 0, 0);
@@ -278,12 +280,9 @@ void update_grid()
     map = new_map;
     new_map = tmp;
 
-    if (BINARY_OUT)
-    {
+    if (BINARY_OUT) {
         binary_to_stdout();
     }
-    
-
 }
 
 // Function to draw the grid using OpenGL
@@ -341,7 +340,6 @@ void draw_grid()
     glutSwapBuffers();
 }
 
-
 // Function to handle the timer callback for updates
 void timer_callback(int _)
 {
@@ -386,7 +384,7 @@ int main(int argc, char **argv)
 
     printf("Enqueues per update: %d\n", MAP_SIZE / BUCKETS_PER_THREAD);
     while (!VISUAL) {
-       update_grid();
+        update_grid();
     }
 
     glutInit(&argc, argv);
