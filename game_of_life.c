@@ -10,17 +10,17 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define GRID_W 300 // Grid width
-#define GRID_H 300 // Grid height
-#define CELL_SIZE 3
+#define GRID_W 950  // Grid width
+#define GRID_H 1010 // Grid height
+#define CELL_SIZE 1
 
 /* MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD */
-// #define MAP_SIZE 262144
+#define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
-#define MAP_SIZE 8192
+// #define MAP_SIZE 8192
 // #define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 // #define MAP_SIZE 4
@@ -28,8 +28,8 @@
 #define BENCHMARK (true)
 
 #define DELAY 0 // mili
-#define BUCKETS_PER_THREAD 256
-#define THREADS 11
+#define BUCKETS_PER_THREAD 4096
+#define THREADS 16
 
 lifeHashMap *map;
 lifeHashMap *new_map;
@@ -207,7 +207,7 @@ void for_buckets(lifeHashMap *life_map, void (*f)(void *))
     }
 
     while (pool->tasks->completed_count != pool->tasks->queued_count) {
-        sched_yield();
+        // sched_yield();
         continue;
     }
     pool->tasks->completed_count = 0;
@@ -216,8 +216,6 @@ void for_buckets(lifeHashMap *life_map, void (*f)(void *))
 
 void update_grid()
 {
-    print_fps();
-
     for_buckets(new_map, purify_buckets);
     // lifemap_free(new_map);
     // new_map = innit(MAP_SIZE, 0, 0);
@@ -244,56 +242,50 @@ void draw_grid()
 
     // Group cells by state
     // Goes over the whole map 6 times reducing glcolor3f calls
-    for (int state = 0; state < 7; state++) {
-        switch (state) {
-        case ORANGE:
-            glColor3f(1, 0.6f, 0);
-            break;
-        case BLUE:
-            glColor3f(0, 0.6f, 1);
-            break;
-        case DEAD:
-            glColor3f(0.4f, 0.4f, 0.4f);
-            break;
-        case 4:
-            glColor3f(0.5f, 0.5f, 0.5f);
-            break;
-        case 5:
-            glColor3f(0.58f, 0.58f, 0.58f);
-            break;
-        default:
-            glColor3f(0.7f, 0.7f, 0.7f);
-            break;
-        }
 
-        glBegin(GL_QUADS);
-        for (uint32_t i = 0; i < map->size; i++) {
-            cellNode *curr = map->buckets[i];
-            while (curr) {
-                if (curr->c.state == state) {
-                    if (curr->c.x > GRID_W || curr->c.y > GRID_H) {
-                        curr = curr->next;
-                        continue; // Skip off-screen cells
-                    }
-
-                    int x1 = curr->c.x * CELL_SIZE;
-                    int y1 = curr->c.y * CELL_SIZE;
-                    int x2 = x1 + CELL_SIZE;
-                    int y2 = y1 + CELL_SIZE;
-
-                    // Draw the cell as a quad
-                    glVertex2i(x1, y1);
-                    glVertex2i(x2, y1);
-                    glVertex2i(x2, y2);
-                    glVertex2i(x1, y2);
-                    // glVertex2i(curr->c.x, curr->c.y);
-                }
+    glBegin(GL_QUADS);
+    for (uint32_t i = 0; i < map->size; i++) {
+        cellNode *curr = map->buckets[i];
+        while (curr) {
+            if (curr->c.x > GRID_W || curr->c.y > GRID_H) {
                 curr = curr->next;
+                continue; // Skip off-screen cells
             }
-        }
-        glEnd();
-    }
+            switch (curr->c.state) {
+            case ORANGE:
+                glColor3f(1, 0.6f, 0);
+                break;
+            case BLUE:
+                glColor3f(0, 0.6f, 1);
+                break;
+            case DEAD:
+                glColor3f(0.4f, 0.4f, 0.4f);
+                break;
+            case 4:
+                glColor3f(0.5f, 0.5f, 0.5f);
+                break;
+            case 5:
+                glColor3f(0.58f, 0.58f, 0.58f);
+                break;
+            default:
+                glColor3f(0.7f, 0.7f, 0.7f);
+                break;
+            }
+            int x1 = curr->c.x * CELL_SIZE;
+            int y1 = curr->c.y * CELL_SIZE;
+            int x2 = x1 + CELL_SIZE;
+            int y2 = y1 + CELL_SIZE;
 
+            // Draw the cell as a quad
+            glVertex2i(x1, y1);
+            glVertex2i(x2, y1);
+            glVertex2i(x2, y2);
+            glVertex2i(x1, y2);
+            // glVertex2i(curr->c.x, curr->c.y);
+            curr = curr->next;
+        }
+    }
+    glEnd();
     glutSwapBuffers();
 }
 
@@ -303,12 +295,14 @@ void timer_callback(int _)
     update_grid();
     glutPostRedisplay();
     glutTimerFunc(DELAY, timer_callback, _); // Schedule next update in DELAYms
+    print_fps();
 }
 // Faster when delay is 0
 void idle_callback()
 {
     update_grid();
     glutPostRedisplay();
+    print_fps();
 }
 
 void cleanup()
@@ -339,7 +333,7 @@ int main(int argc, char **argv)
     printf("Enqueues per update: %d\n", MAP_SIZE / BUCKETS_PER_THREAD);
     // debugging without window
     // while (1) {
-    //     update_grid();
+    //    update_grid();
     // }
 
     glutInit(&argc, argv);

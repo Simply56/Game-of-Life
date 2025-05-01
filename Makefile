@@ -1,6 +1,6 @@
 CC = clang
 CFLAGS = -Ofast -DNDEBUG # fastest but might break; DNDEBUG disables asserts
-# CFLAGS = -O3 # production
+# CFLAGS = -O2 -g  # profiling
 # CFLAGS = -g  #-fsanitize=address # debugging
 # CFLAGS = -g -O0 -fsanitize=thread # thread debugging
 
