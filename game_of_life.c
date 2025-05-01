@@ -29,7 +29,7 @@
 
 #define DELAY 0 // mili
 #define BUCKETS_PER_THREAD 4096
-#define THREADS 16
+#define THREAD_COUNT 16
 
 lifeHashMap *map;
 lifeHashMap *new_map;
@@ -325,7 +325,7 @@ int main(int argc, char **argv)
 
     initialize_map();
 
-    pool = create_pool(THREADS);
+    pool = create_pool(THREAD_COUNT);
     if (!pool) {
         return EXIT_FAILURE;
     }

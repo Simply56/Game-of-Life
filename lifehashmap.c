@@ -40,7 +40,7 @@ lifeHashMap *innit(uint32_t size, int width, int height, int benchmark)
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            lifemap_set(map, (cell) { .x = x, .y = y, .state = rand() % 6});
+            lifemap_set(map, (cell) { .x = x, .y = y, .state = rand() % 5});
         }
     }
 
