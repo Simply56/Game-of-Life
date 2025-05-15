@@ -12,18 +12,18 @@
 #include <time.h>
 #include <unistd.h>
 
-#define GRID_W 100 // Grid width
-#define GRID_H 100 // Grid height
-#define CELL_SIZE 8
+#define GRID_W 400 // Grid width
+#define GRID_H 400 // Grid height
+#define CELL_SIZE 2
 
 /* MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD */
 // #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
-// #define MAP_SIZE 65536
+#define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
 // #define MAP_SIZE 8192
-#define MAP_SIZE 4096
+// #define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 // #define MAP_SIZE 4
 
@@ -113,7 +113,7 @@ void print_fps()
         fps = frame_count / (now - last_time);
         frame_count = 0;
         last_time = now;
-        printf("FPS: %.2f\n", fps);
+        fprintf(stderr, "FPS: %.2f\n", fps);
         print_load_factor();
     }
 }
@@ -347,14 +347,14 @@ void timer_callback(int _)
     glutPostRedisplay();
     binary_to_stdout();
     glutTimerFunc(DELAY, timer_callback, _); // Schedule next update in DELAYms
-    // print_fps();
+    print_fps();
 }
 // Faster when delay is 0
 void idle_callback()
 {
     update_grid();
     glutPostRedisplay();
-    // print_fps();
+    print_fps();
 }
 
 void cleanup()
