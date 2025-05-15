@@ -12,27 +12,27 @@
 #include <time.h>
 #include <unistd.h>
 
-#define GRID_W 800 // Grid width
-#define GRID_H 800 // Grid height
-#define CELL_SIZE 1
+#define GRID_W 100 // Grid width
+#define GRID_H 100 // Grid height
+#define CELL_SIZE 8
 
 /* MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD */
-#define MAP_SIZE 262144
+// #define MAP_SIZE 262144
 // #define MAP_SIZE 131072
 // #define MAP_SIZE 65536
 // #define MAP_SIZE 32768
 // #define MAP_SIZE 16384
 // #define MAP_SIZE 8192
-// #define MAP_SIZE 4096
+#define MAP_SIZE 4096
 // #define MAP_SIZE 2048
 // #define MAP_SIZE 4
 
 #define BENCHMARK (true)
-#define VISUAL (false)
-#define BINARY_OUT (true)
+#define VISUAL (true)
+#define BINARY_OUT (false)
 
 #define DELAY 0 // mili
-#define BUCKETS_PER_THREAD 4096
+#define BUCKETS_PER_THREAD 64
 #define THREAD_COUNT 14
 
 lifeHashMap *map;
@@ -123,6 +123,7 @@ void initialize_map()
 {
     map = innit(MAP_SIZE, GRID_W, GRID_H, BENCHMARK);
     new_map = innit(MAP_SIZE, 0, 0, BENCHMARK);
+    print_load_factor();
 }
 
 void count_neighbors(int x, int y, uint8_t *blue_count, uint8_t *orange_count)
@@ -262,7 +263,6 @@ void for_buckets(lifeHashMap *life_map, void (*f)(void *))
 
 void update_grid()
 {
-    print_load_factor();
     for_buckets(new_map, purify_buckets);
     // lifemap_free(new_map);
     // new_map = innit(MAP_SIZE, 0, 0);
