@@ -50,7 +50,9 @@ typedef struct iterator
     lifeHashMap *map;    // a map over which we are iterating
     cellNode *curr;      // the node that will be returned next
     uint32_t bucket_idx; // index of the current bucket
-};
+} iterator;
+bool has_next(iterator *itr);
+cellNode *next(iterator *itr);
 
 void print_cell(cell c);
 void print_map(lifeHashMap *map);
