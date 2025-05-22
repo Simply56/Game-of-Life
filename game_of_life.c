@@ -246,15 +246,12 @@ void for_buckets(lifeHashMap *life_map, void (*f)(void *))
 {
     pool->tasks->queued_count = 0;
     for (uint32_t i = 0; i < life_map->size; i += BUCKETS_PER_THREAD) {
-        // if (life_map->buckets[i] == NULL) {
-        //     continue;
-        // }
         enqueue(pool->tasks, (package) { .data_p = &(life_map->buckets[i]), .func = f });
         pool->tasks->queued_count++;
     }
 
     while (pool->tasks->completed_count != pool->tasks->queued_count) {
-        // sched_yield();
+        sched_yield();
         continue;
     }
     pool->tasks->completed_count = 0;
@@ -292,8 +289,6 @@ void draw_grid()
     glClearColor(1, 1, 1, 1);
 
     // Group cells by state
-    // Goes over the whole map 6 times reducing glcolor3f calls
-
     glBegin(GL_QUADS);
     for (uint32_t i = 0; i < map->size; i++) {
         cellNode *curr = map->buckets[i];
@@ -341,13 +336,15 @@ void draw_grid()
 }
 
 // Function to handle the timer callback for updates
-void timer_callback(int _)
+void timer_callback(int delay)
 {
     update_grid();
     glutPostRedisplay();
-    binary_to_stdout();
-    glutTimerFunc(DELAY, timer_callback, _); // Schedule next update in DELAYms
+    glutTimerFunc(DELAY, timer_callback, delay); // Schedule next update in DELAYms
     print_fps();
+    if (BINARY_OUT) {
+        binary_to_stdout();
+    }
 }
 // Faster when delay is 0
 void idle_callback()
@@ -355,6 +352,9 @@ void idle_callback()
     update_grid();
     glutPostRedisplay();
     print_fps();
+    if (BINARY_OUT) {
+        binary_to_stdout();
+    }
 }
 
 void cleanup()
@@ -399,7 +399,6 @@ int main(int argc, char **argv)
 
     if (DELAY) {
         glutTimerFunc(DELAY, timer_callback, 0);
-        puts("using DELAY");
     } else {
         glutIdleFunc(idle_callback); // Continuously update and render
     }
