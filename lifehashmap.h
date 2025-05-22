@@ -56,7 +56,7 @@ cellNode *next(iterator *itr);
 
 void print_cell(cell c);
 void print_map(lifeHashMap *map);
-size_t count_items(lifeHashMap *map);
+size_t count_items(lifeHashMap *map); // used for calculating the load factor
 
 lifeHashMap *innit(uint32_t size, int width, int height, int benchmark);
 void lifemap_free(lifeHashMap *map);
