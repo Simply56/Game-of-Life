@@ -39,10 +39,18 @@ typedef struct cellNode
 
 typedef struct lifeHashMap
 {
-    cellNode **buckets; // fixed width array of pointers
-    uint32_t size;
+    cellNode **buckets;      // fixed width array of pointers
+    uint32_t size;           // number of buckets (linked lists)
     pthread_rwlock_t *locks; // fixed width array
 } lifeHashMap;
+
+// represent an iterator that stores a state of iteration
+typedef struct iterator
+{
+    lifeHashMap *map;    // a map over which we are iterating
+    cellNode *curr;      // the node that will be returned next
+    uint32_t bucket_idx; // index of the current bucket
+};
 
 void print_cell(cell c);
 void print_map(lifeHashMap *map);
