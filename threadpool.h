@@ -35,7 +35,7 @@ typedef struct worker_handle
 
 typedef struct thread_pool
 {
-    queue *tasks; // linked litypedef st
+    queue *tasks; // linked list
     int thread_count;
     pthread_t *tids; // fixed width array
     atomic_bool running;
