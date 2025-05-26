@@ -8,5 +8,5 @@ It was written in Python and rendered using tkinter; that rendered was given to 
 
 Since then, I have wondered how much faster I can make it.
 
-#### Gif of the game running in a 400x400 window at around 35fps on my laptop
+#### Gif of the game running in a 400x400 window at around 35fps (50fps in the most recent version) on my laptop
 ![Demo](demo/life.gif)
