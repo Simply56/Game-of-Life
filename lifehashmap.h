@@ -32,7 +32,7 @@ typedef struct lifeHashMap
 {
     cellNode **buckets;      // fixed width array of pointers
     uint32_t size;           // number of buckets (linked lists)
-    pthread_rwlock_t *locks; // fixed width array
+    pthread_mutex_t *locks; // fixed width array
 } lifeHashMap;
 
 

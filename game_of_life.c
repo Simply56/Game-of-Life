@@ -14,7 +14,7 @@
 
 #define GRID_W 400 // Grid width
 #define GRID_H 400 // Grid height
-#define CELL_SIZE 2
+#define CELL_SIZE 1
 
 /* MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD */
 // #define MAP_SIZE 262144
