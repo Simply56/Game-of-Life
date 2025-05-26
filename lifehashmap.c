@@ -68,10 +68,10 @@ cell *__lifemap_get(lifeHashMap *map, int x, int y)
 }
 cell *lifemap_get(lifeHashMap *map, int x, int y)
 {
-    uint32_t key = hash(x, y, map->size);
-    pthread_rwlock_rdlock(&(map->locks[key]));
+    // uint32_t key = hash(x, y, map->size);
+    // pthread_rwlock_rdlock(&(map->locks[key]));
     cell *result = __lifemap_get(map, x, y);
-    pthread_rwlock_unlock(&(map->locks[key]));
+    // pthread_rwlock_unlock(&(map->locks[key]));
     return result;
 }
 

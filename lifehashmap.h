@@ -22,15 +22,6 @@ typedef struct cell
     uint8_t state;
 } cell;
 
-/* CONVERSION TO BINARY TREE FROM LINKED LIST
- * The simplest possible iterator stores the last seen key, and then on the next iteration,
- * searches the tree for the least upper bound for that key. Iteration is O(log n).
- * This has the advantage of being very simple. If keys are small then the iterators are also small.
- * Of course it has the disadvantage of being a relatively slow way of iterating through the tree. 
- * It also won't work for non-unique sequences.
- * my note: static variables are not thread safe, so use pointers to next instead
- */
-
 typedef struct cellNode
 {
     cell c;
@@ -44,15 +35,6 @@ typedef struct lifeHashMap
     pthread_rwlock_t *locks; // fixed width array
 } lifeHashMap;
 
-// represent an iterator that stores a state of iteration
-typedef struct iterator
-{
-    lifeHashMap *map;    // a map over which we are iterating
-    cellNode *curr;      // the node that will be returned next
-    uint32_t bucket_idx; // index of the current bucket
-} iterator;
-bool has_next(iterator *itr);
-cellNode *next(iterator *itr);
 
 void print_cell(cell c);
 void print_map(lifeHashMap *map);

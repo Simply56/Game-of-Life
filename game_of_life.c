@@ -32,7 +32,7 @@
 #define BINARY_OUT (false)
 
 #define DELAY 0 // mili
-#define BUCKETS_PER_THREAD 64
+#define BUCKETS_PER_THREAD 256
 #define THREAD_COUNT 14
 
 lifeHashMap *map;
