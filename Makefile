@@ -1,7 +1,7 @@
 CC = clang
-CFLAGS = -Ofast -DNDEBUG # fastest but might break; DNDEBUG disables asserts
-# CFLAGS = -O2 -g  # profiling
-# CFLAGS = -g  #-fsanitize=address # debugging
+CFLAGS = -Ofast -DNDEBUG -march=native -flto # fastest but unsafe
+
+# CFLAGS = -g  -fsanitize=address 
 # CFLAGS = -g -O0 -fsanitize=thread # thread debugging
 
 # CFLAGS = -g -O0 # valgrind compatible
