@@ -1,14 +1,13 @@
 CC = clang
-CFLAGS = -Ofast -DNDEBUG -march=native -flto # fastest but unsafe
+CFLAGS = -Ofast -DNDEBUG -march=native -flto
+LDFLAGS = -lGL -lGLU -lglut
 
 # CFLAGS = -g  -fsanitize=address 
 # CFLAGS = -g -O0 -fsanitize=thread # thread debugging
-
 # CFLAGS = -g -O0  # valgrind compatible
 
-LDFLAGS = -lGL -lGLU -lglut
 TARGET = game_of_life
-SOURCES = game_of_life.c lifehashmap.c threadpool.c utils.c
+SOURCES = src/game_of_life.c src/lifehashmap.c src/threadpool.c src/utils.c
 
 all: $(TARGET)
 
