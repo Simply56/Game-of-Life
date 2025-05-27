@@ -16,6 +16,9 @@ typedef struct node
     struct node *next;
 } node;
 
+// TODO: try using a fixed with array that would block if it was full (less mallocs and frees)
+// TODO: look into compare and exchange for a lockless queue
+// TODO: if we use array atomic_fetch_add could also be used to go lockless
 // queue of pointers to data and function
 typedef struct queue
 {
@@ -35,8 +38,8 @@ typedef struct worker_handle
 
 typedef struct thread_pool
 {
-    queue *tasks; // linked list
     int thread_count;
+    queue *tasks;    // linked list
     pthread_t *tids; // fixed width array
     atomic_bool running;
     worker_handle *w_handle;

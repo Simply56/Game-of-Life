@@ -2,6 +2,7 @@
 
 #include "lifehashmap.h"
 #include "threadpool.h"
+#include "utils.h"
 
 #include <GL/glut.h>
 #include <assert.h>
@@ -14,7 +15,7 @@
 
 #define GRID_W 400 // Grid width
 #define GRID_H 400 // Grid height
-#define CELL_SIZE 1
+#define CELL_SIZE 2
 
 /* MAP_SIZE MUST BE DIVISIBLE BY BUCKETS_PER_THREAD */
 // #define MAP_SIZE 262144
@@ -81,49 +82,12 @@ void binary_to_stdout()
     }
 }
 
-void print_load_factor()
-{
-    if (!BENCHMARK) {
-        return;
-    }
-
-    double load_factor = (double) count_items(map) / (double) MAP_SIZE;
-
-    fprintf(stderr, "Load factor: %f\n", load_factor);
-}
-
-void print_fps()
-{
-    if (!BENCHMARK) {
-        return;
-    }
-
-    static int frame_count = 0;
-    static double last_time = 0;
-    static double fps = 0.0;
-
-    struct timespec current_time;
-    clock_gettime(CLOCK_MONOTONIC, &current_time);
-    double now = current_time.tv_sec + (current_time.tv_nsec / 1e9);
-
-    frame_count++;
-
-    // Calculate FPS every second
-    if (now - last_time >= 1.0) {
-        fps = frame_count / (now - last_time);
-        frame_count = 0;
-        last_time = now;
-        fprintf(stderr, "FPS: %.2f\n", fps);
-        print_load_factor();
-    }
-}
-
 // To initialize the grid with random cells
 void initialize_map()
 {
     map = innit(MAP_SIZE, GRID_W, GRID_H, BENCHMARK);
     new_map = innit(MAP_SIZE, 0, 0, BENCHMARK);
-    print_load_factor();
+    print_load_factor(map, MAP_SIZE);
 }
 
 void count_neighbors(int x, int y, uint8_t *blue_count, uint8_t *orange_count)
@@ -341,7 +305,7 @@ void timer_callback(int delay)
     update_grid();
     glutPostRedisplay();
     glutTimerFunc(DELAY, timer_callback, delay); // Schedule next update in DELAYms
-    print_fps();
+    print_fps(map, MAP_SIZE);
     if (BINARY_OUT) {
         binary_to_stdout();
     }
@@ -351,7 +315,7 @@ void idle_callback()
 {
     update_grid();
     glutPostRedisplay();
-    print_fps();
+    print_fps(map, MAP_SIZE);
     if (BINARY_OUT) {
         binary_to_stdout();
     }
