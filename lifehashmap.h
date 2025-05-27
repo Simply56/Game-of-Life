@@ -30,11 +30,10 @@ typedef struct cellNode
 
 typedef struct lifeHashMap
 {
-    cellNode **buckets;      // fixed width array of pointers
-    uint32_t size;           // number of buckets (linked lists)
+    cellNode **buckets;     // fixed width array of pointers
+    uint32_t size;          // number of buckets (linked lists)
     pthread_mutex_t *locks; // fixed width array
 } lifeHashMap;
-
 
 void print_cell(cell c);
 void print_map(lifeHashMap *map);
